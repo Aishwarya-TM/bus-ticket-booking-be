@@ -67,12 +67,12 @@ const searchBusesByOperator = async (request, response) => {
 const searchBusesByBusTypes = async (request, response) => {
     const { busType } = request.params
 
-    try {
-        const formattedCategory = busType.replace(/[\s-]/g, '[-\\s]?')
+    try 
+    {
+        const regexPattern = new RegExp(`^${busType}$`, 'i')
 
-        const regexPattern = new RegExp(formattedCategory, 'i')
+        const buses = await busModel.find({ busType: { $regex: regexPattern } }).select('-_id -__v')
 
-        const buses = await busModel.find({ busType: regexPattern }).select('-_id -__v')
 
         if (!buses || buses.length === 0) {
             return response.status(404).send({ message: "BusType not found!" })
@@ -86,22 +86,22 @@ const searchBusesByBusTypes = async (request, response) => {
 }
 
 const searchBusesByBusCategory = async (request, response) => {
-    const { busCategory } = request.params
+    const { busCategory } = request.params;
 
-    try {
-        const formattedCategory = busCategory.replace(/[\s-]/g, '[-\\s]?')
-        const regexPattern = new RegExp(formattedCategory, 'i')
+    try 
+    {
+        const regexPattern = new RegExp(`^${busCategory}$`, 'i')
 
-        const buses = await busModel.find({ busCategory: regexPattern }).select('-_id -__v')
+        const buses = await busModel.find({ busCategory: { $regex: regexPattern } }).select('-_id -__v')
 
         if (!buses || buses.length === 0) {
-            return response.status(404).send({ message: "BusCategory not found!" })
+            return response.status(404).send({ message: "BusCategory not found!" });
         }
 
-        return response.status(200).json(buses)
-    }
+        return response.status(200).json(buses);
+    } 
     catch (error) {
-        return response.status(500).json({ message: error.message })
+        return response.status(500).json({ message: error.message });
     }
 }
 
@@ -112,27 +112,24 @@ const bookSeats = async (request, response) => {
 
     try {
         console.log(busId, dateToBook, source, destination, seatNumbers)
-        const bus = await busModel.findById({_id: busId})
+        const bus = await busModel.findById({ _id: busId })
 
 
-        if (!bus) 
-        {
+        if (!bus) {
             return response.status(404).json({ message: 'Bus not found for the given date or source' })
         }
-        
+
 
         const travelDate = bus.date.toISOString()
-        if (travelDate !== dateToBook || bus.source !== source || bus.destination !== destination) 
-        {
+        if (travelDate !== dateToBook || bus.source !== source || bus.destination !== destination) {
             return response.status(400).json({ message: 'Invalid date or source or destination' })
         }
 
 
         const seatInfo = await seatModel.findOne({ busId: busId })
-        
 
-        if (!seatInfo) 
-        {
+
+        if (!seatInfo) {
             return response.status(404).json({ message: 'Seats information not found for the given bus and date' })
         }
 
